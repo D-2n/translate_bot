@@ -26,7 +26,6 @@ nfsb=0
 def listen_for_user(bot_token, chat_id, user_id, chat_id2, nfsb):
     url = f"https://api.telegram.org/bot{TOKEN}/getUpdates?offset=-1"
     lastid = None
-    while True:
         response = requests.get(url)
         updates = json.loads(response.text)
         upd = updates["result"][-1]
@@ -144,7 +143,7 @@ def listen_for_user(bot_token, chat_id, user_id, chat_id2, nfsb):
                                                 send_pv(bot_token, chat_id2, pv, format(cap))
 
 
-
+    return "ok"
 # ----------------------------------------------------------------------
 def translate(text, lang):
     strale = Translator()
