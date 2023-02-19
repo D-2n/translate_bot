@@ -1,31 +1,38 @@
+from flask import Flask, request
 import telegram.ext as tp
 from telegram.ext import *
+import os
+import telegram
 import requests
 import json
 from googletrans import Translator
-# -----------------------------------------------------
-TOKEN = '5259610624:AAGMNZmwTmX00LGno0Ykn8MiZMnVL4UK1zw'
+
+TOKEN = os.getenv("BOT_TOKEN")
+URL = os.getenv("URL")
+bot = telegram.Bot(token=TOKEN)
+app = Flask(__name__)
+
 updater = tp.Updater(TOKEN,use_context=True)
 disp = updater.dispatcher
-user_id = ["yeetermeister"]
+user_id = []
 chat_id = 669277306
-fam = (-689737739,"sr")
 chat_id2 = []
 chat_id_check=[]# list of chats to which it sends the msg
 group_name = []
 admins = ["yeetermeister"]
 nfsb=0
-# -----------------------------------------------------
-def listen_for_user ( bot_token , chat_id , user_id,chat_id2 ,nfsb):
+
+@app.route("/{}".format(TOKEN), methods=["POST"])
+def listen_for_user(bot_token, chat_id, user_id, chat_id2, nfsb):
     url = f"https://api.telegram.org/bot{TOKEN}/getUpdates?offset=-1"
-    lastid=None
+    lastid = None
     while True:
         response = requests.get(url)
         updates = json.loads(response.text)
-        upd=updates["result"][-1]
+        upd = updates["result"][-1]
         if "message" in upd:
             if upd["update_id"] != lastid:
-                lastid=upd["update_id"]
+                lastid = upd["update_id"]
                 if upd["message"]["chat"]["type"] == 'private':
                     korisnik = upd["message"]["from"]["username"]
                     if korisnik in admins:
@@ -78,7 +85,6 @@ def listen_for_user ( bot_token , chat_id , user_id,chat_id2 ,nfsb):
                                 else:
                                     user_id.append(second)
                                     send_fdb(bot_token, id, "User added!")
-                                    print(user_id)
                             # REMOVE LISTEN--------------------------------------------------------
                             if first == '/remove_listen':
                                 id = upd["message"]["chat"]["id"]
@@ -89,89 +95,73 @@ def listen_for_user ( bot_token , chat_id , user_id,chat_id2 ,nfsb):
                                 else:
                                     send_fdb(bot_token, id, "User wasn't added!")
                                     print(user_id)
-                tip=upd["message"]["chat"]["type"]
-                if (tip in ['group','supergroup']):
-                    korisnik=upd["message"]["from"]["username"]
+                tip = upd["message"]["chat"]["type"]
+                if (tip in ['group', 'supergroup']):
+                    korisnik = upd["message"]["from"]["username"]
                     if korisnik in user_id:
-                            if nfsb==0:
-                                nfsb=1
-                            else:
-                                first = upd["message"]["text"].split(' ')[0]
-                                if korisnik in admins:
-                                    print("aaa")
-                                    if first == '/set_out':
-                                        id = upd["message"]["chat"]["id"]
-                                        second = upd["message"]["text"].split(' ')[1]
-                                        print(chat_id_check)
-                                        if id in chat_id_check:
-                                            send_fdb(bot_token, id, "Chat already added to output list!")
-                                        else:
-                                            chat_id2.append((id, second))
-                                            chat_id_check.append(id)
-                                            send_fdb(bot_token, id, "Chat successfully added to output list!")
-                                    # REMOVE FROM OUTPUT LIST -------------------------------------------------
-                                    if first == '/remove_out':
-                                        id = upd["message"]["chat"]["id"]
-                                        print(chat_id_check)
-                                        if id in chat_id_check:
-                                            ind = chat_id_check.index(id)
-                                            chat_id_check.remove(chat_id_check[ind])
-                                            chat_id2.remove(chat_id2[ind])
-                                            send_fdb(bot_token, id, "Chat removed from output list!")
-                                        else:
-                                            send_fdb(bot_token, id, "Chat wasn't added!")
-
-                                naziv = upd["message"]["chat"]["title"]
-                                if naziv in group_name:
-                                    if "text" in upd["message"]:
-                                        text = upd["message"]["text"]
-                                        send_message(bot_token, chat_id2, format(text))
+                        if nfsb == 0:
+                            nfsb = 1
+                        else:
+                            first = upd["message"]["text"].split(' ')[0]
+                            if korisnik in admins:
+                                if first == '/set_out':
+                                    id = upd["message"]["chat"]["id"]
+                                    second = upd["message"]["text"].split(' ')[1]
+                                    if id in chat_id_check:
+                                        send_fdb(bot_token, id, "Chat already added to output list!")
                                     else:
-                                        if "photo" in upd["message"]:
-                                            if nfsb == 0:
-                                               nfsb = 1
+                                        chat_id2.append((id, second))
+                                        chat_id_check.append(id)
+                                        send_fdb(bot_token, id, "Chat successfully added to output list!")
+                                # REMOVE FROM OUTPUT LIST -------------------------------------------------
+                                if first == '/remove_out':
+                                    id = upd["message"]["chat"]["id"]
+                                    if id in chat_id_check:
+                                        ind = chat_id_check.index(id)
+                                        chat_id_check.remove(chat_id_check[ind])
+                                        chat_id2.remove(chat_id2[ind])
+                                        send_fdb(bot_token, id, "Chat removed from output list!")
+                                    else:
+                                        send_fdb(bot_token, id, "Chat wasn't added!")
+
+                            naziv = upd["message"]["chat"]["title"]
+                            if naziv in group_name:
+                                if "text" in upd["message"]:
+                                    text = upd["message"]["text"]
+                                    send_message(bot_token, chat_id2, format(text))
+                                else:
+                                    if "photo" in upd["message"]:
+                                        if nfsb == 0:
+                                            nfsb = 1
+                                        else:
+                                            if "caption" in upd["message"]:
+                                                cap = upd["message"]["caption"]
+                                                pv = upd["message"]["photo"][0]["file_id"]
+                                                send_pv(bot_token, chat_id2, pv, format(cap))
                                             else:
-                                                if "caption" in upd["message"]:
-                                                    cap = upd["message"]["caption"]
-                                                    pv = upd["message"]["photo"][0]["file_id"]
-                                                    print(pv)
-                                                    send_pv(bot_token,chat_id2,pv,format(cap))
-                                                else:
-                                                    cap=''
-                                                    pv = upd["message"]["photo"][0]["file_id"]
-                                                    print(pv)
-                                                    send_pv(bot_token, chat_id2, pv, format(cap))
-                                        """ Send video section possibly for later use
-                                        if "video" in upd["message"]:
-                                            if nfsb == 0:
-                                                nfsb = 1
-                                            else:
-                                                if "caption" in upd["message"]:
-                                                    cap = upd["message"]["caption"]
-                                                    print(upd["message"]["video"])
-                                                    pv = upd["message"]["video"]["thumb"]["file_id"]
-                                                    print(pv)
-                                                    send_v(bot_token,chat_id2,pv,format(cap))
-                                                else:
-                                                    cap=''
-                                                    print(upd["message"]["video"])
-                                                    pv = upd["message"]["video"]["thumb"]["file_id"]
-                                                    print(pv)
-                                                    send_v(bot_token, chat_id2, pv, format(cap) 
-                                        """
-#----------------------------------------------------------------------
-def translate(text,lang):
-    strale=Translator()
-    prevod=strale.translate(text,dest=lang)
+                                                cap = ''
+                                                pv = upd["message"]["photo"][0]["file_id"]
+                                                send_pv(bot_token, chat_id2, pv, format(cap))
+
+
+
+# ----------------------------------------------------------------------
+def translate(text, lang):
+    strale = Translator()
+    prevod = strale.translate(text, dest=lang)
     return prevod.text
-#----------------------------------------------------------------------
-def send_fdb(bot_token,id,text):
+
+
+# ----------------------------------------------------------------------
+def send_fdb(bot_token, id, text):
     url = "https://api.telegram.org/bot{}/sendMessage".format(bot_token)
     params = {
         "chat_id": id,
         "text": text
     }
     response = requests.post(url, params=params)
+
+
 def send_message(bot_token, chat_id2, text):
     url = "https://api.telegram.org/bot{}/sendMessage".format(bot_token)
     for chat_id in chat_id2:
@@ -181,37 +171,38 @@ def send_message(bot_token, chat_id2, text):
             "text": newtxt
         }
         response = requests.post(url, params=params)
-def send_pv(bot_token,to_chat,pv,txt):
+
+
+def send_pv(bot_token, to_chat, pv, txt):
     url = "https://api.telegram.org/bot{}/sendPhoto".format(bot_token)
     for chat_id in to_chat:
         newtxt = translate("TRANSLATED AUTOMATICALLY!\n" + txt, chat_id[1])
         params = {
             "chat_id": chat_id[0],
             "photo": str(pv),
-            "caption" : newtxt
+            "caption": newtxt
         }
         response = requests.post(url, params=params)
-""" Send video function (possibly for later)
-def send_v(bot_token,to_chat,v,txt):
-    text=translate("TRANSLATED AUTOMATICALLY!\n"+ txt)
-    url = "https://api.telegram.org/bot{}/sendVideo".format(bot_token)
-    params = {
-        "chat_id": to_chat,
-        "video": str(v),
-        "caption" : text
-    }
-    response = requests.post(url, params=params)
-    print(response)
-"""
-def start_com(update,context):
-    print('AAAAAA')
+
+
+@app.route("/setwebhook", methods=["GET", "POST"])
+def set_webhook():
+    # we use the bot object to link the bot to our app which live
+    # in the link provided by URL
+    s = bot.setWebhook("{URL}{HOOK}".format(URL=URL, HOOK=TOKEN))
+    # something to let us know things work
+    if s:
+        return "webhook setup ok"
+    else:
+        return "webhook setup failed"
+
+
+@app.route("/")
+def index():
+    return "Hello, welcome to the telegram bot index page"
+
+
 if __name__ == "__main__":
-    bot_token = TOKEN
-    updater = tp.Updater(TOKEN, use_context=True)
-    disp = updater.dispatcher
-    # listen
-    listen_for_user(bot_token, chat_id, user_id, chat_id2, nfsb)
-    # commands
-    disp.add_handler(CommandHandler("start",start_com))
-updater.start_polling(0.5)
-updater.idle()
+    # note the threaded arg which allow
+    # your app to have more than one thread
+    app.run(threaded=True)
