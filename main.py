@@ -205,4 +205,10 @@ def index():
 if __name__ == "__main__":
     # note the threaded arg which allow
     # your app to have more than one thread
+    updater = tp.Updater(TOKEN, use_context=True)
+    disp = updater.dispatcher
+    # listen
+    listen_for_user(TOKEN, chat_id, user_id, chat_id2, nfsb)
     app.run(threaded=True)
+updater.start_polling(0.5)
+updater.idle()
