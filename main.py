@@ -61,6 +61,7 @@ def start(message):
 url = f"https://api.telegram.org/bot{TOKEN}/getUpdates?offset=-1"
 lastid = None
 bot_token=TOKEN
+bot.polling()
 while True:
      response = requests.get(url)
      updates = json.loads(response.text)
