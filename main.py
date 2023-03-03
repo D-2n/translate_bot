@@ -76,7 +76,7 @@ while True:
                          nfsb = 1
                      else:
                          first = upd["message"]["text"].split(' ')[0]
-                         # ADD ADMIN------------------------------------
+                         # ADD ADMIN-----------------------------------
                          if first == "/add_admin":
                              id = upd["message"]["chat"]["id"]
                              second = upd["message"]["text"].split(' ')[1]
