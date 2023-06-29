@@ -10,13 +10,12 @@ import sys
 TOKEN = '5259610624:AAGMNZmwTmX00LGno0Ykn8MiZMnVL4UK1zw'
 #updater = tp.Updater(TOKEN,use_context=True)
 #disp = updater.dispatcher
-user_id = ["yeetermeister"]
-chat_id = 669277306
-fam = (-689737739, "sr")
+user_id = ["add_your_username_so_you_can_configure_it"]
+chat_id = 669277306 #chat id i used for testing configuration, you have to use your own
 chat_id2 = []
 chat_id_check = []  # list of chats to which it sends the msg
 group_name = []
-admins = ["yeetermeister"]
+admins = ["same_username_here"]
 nfsb = 0
 # -----------------------------------------------------
 bot = telebot.TeleBot(TOKEN)
